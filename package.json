@@ -1,0 +1,46 @@
+{
+  "name": "cesium-test",
+  "author": {
+    "name": "SweetZzx",
+    "email": "3082269605@qq.com"
+  },
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc -b && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@cesium/engine": "^23.0.1",
+    "@element-plus/icons-vue": "^2.3.2",
+    "@mapbox/vector-tile": "^2.0.4",
+    "@turf/turf": "^7.2.0",
+    "@vitejs/plugin-legacy": "^7.2.1",
+    "@zjugis/cesium-martini": "^1.2.3",
+    "axios": "^1.12.2",
+    "cesium": "^1.135.0",
+    "element-plus": "^2.11.2",
+    "kdbush": "^4.0.2",
+    "pbf": "^4.0.1",
+    "sass": "^1.92.1",
+    "sass-loader": "^16.0.5",
+    "unplugin-auto-import": "^20.1.0",
+    "unplugin-vue-components": "^29.0.0",
+    "vite-plugin-cesium": "^1.2.23",
+    "vite-plugin-compression": "^0.5.1",
+    "vue": "^3.5.18",
+    "vue-pick-colors": "^1.8.0",
+    "vue-router": "^4.5.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^6.0.1",
+    "@vue/tsconfig": "^0.7.0",
+    "puppeteer": "^24.40.0",
+    "typescript": "~5.8.3",
+    "vite": "^7.1.2",
+    "vue-tsc": "^3.0.5"
+  }
+}
