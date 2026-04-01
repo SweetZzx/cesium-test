@@ -30,9 +30,6 @@
                 <el-button size="small" type="warning" @click="clearAll">
                     清除结果
                 </el-button>
-                <el-button size="small" type="info" @click="downloadLog">
-                    下载日志
-                </el-button>
             </div>
         </div>
     </div>
@@ -45,7 +42,6 @@ import { DistanceMeasure } from '@/system/Measure/DistanceMeasure'
 import { AreaMeasure } from '@/system/Measure/AreaMeasure'
 import type { BaseMeasure } from '@/system/Measure/BaseMeasure'
 import EventDispatcher from '@/system/EventDispatcher/EventDispatcher'
-import { MeasureLogger } from '@/system/Measure/MeasureLogger'
 
 const viewer = CesiumViewer.viewer
 const dispatcher = new EventDispatcher()
@@ -88,10 +84,6 @@ const clearAll = () => {
     }
     activeType.value = ''
     measureInfo.value = ''
-}
-
-const downloadLog = () => {
-    MeasureLogger.downloadLog()
 }
 
 onBeforeUnmount(() => {

@@ -16,9 +16,6 @@ import {
 import { BaseMeasure } from "./BaseMeasure"
 import EventDispatcher from "../EventDispatcher/EventDispatcher"
 import { MeasureUtil } from "./MeasureUtil"
-import { MeasureLogger } from "./MeasureLogger"
-
-const TAG = 'AreaMeasure'
 
 /**
  * 面积/周长量测
@@ -32,7 +29,7 @@ const TAG = 'AreaMeasure'
 export class AreaMeasure extends BaseMeasure {
     private measureUtil: MeasureUtil
 
-    // 存储面积标注的 Label 对象（直接操作 Label 实例属性，无 Property 系统）
+    // 存储面积标注的 Label 对象
     private areaLabelObject: Label | null = null
 
     // LabelCollection Primitive（图元，不走 Entity 系统）
@@ -42,14 +39,11 @@ export class AreaMeasure extends BaseMeasure {
         super(viewer, dispatcher)
         this.measureUtil = MeasureUtil.getInstance(viewer)
         this.minPointCount = 3
-        // 创建 LabelCollection 并加入场景
         this.labelCollection = new LabelCollection({ scene: viewer.scene })
         viewer.scene.primitives.add(this.labelCollection)
-        MeasureLogger.info(TAG, 'AreaMeasure 实例已创建，LabelCollection 已加入场景')
     }
 
     protected buildFinalEntity() {
-        MeasureLogger.debug(TAG, 'buildFinalEntity: 构建最终多边形实体')
         return this.viewer.entities.add({
             polygon: new PolygonGraphics({
                 hierarchy: new PolygonHierarchy(this.getPositions()),
@@ -62,10 +56,6 @@ export class AreaMeasure extends BaseMeasure {
     }
 
     protected buildTempEntity() {
-        MeasureLogger.debug(TAG, 'buildTempEntity', {
-            pointCount: this.pointEntities.length,
-            hasTempCursor: !!this.tempCursor
-        })
         if (this.pointEntities.length < 1 || !this.tempCursor) return undefined
         return this.viewer.entities.add({
             polyline: new PolylineGraphics({
@@ -77,7 +67,6 @@ export class AreaMeasure extends BaseMeasure {
         })
     }
 
-    /** 清除面积标注 */
     private clearAreaLabel(): void {
         if (this.areaLabelObject) {
             this.labelCollection.remove(this.areaLabelObject)
@@ -92,7 +81,6 @@ export class AreaMeasure extends BaseMeasure {
 
     destroy(): void {
         this.clearAreaLabel()
-        // 从场景中移除 LabelCollection
         if (this.labelCollection && this.viewer) {
             this.labelCollection.removeAll()
             this.viewer.scene.primitives.remove(this.labelCollection)
@@ -101,8 +89,6 @@ export class AreaMeasure extends BaseMeasure {
     }
 
     protected addPoint(position: Cartesian3): void {
-        MeasureLogger.enter(TAG, 'addPoint', { position, currentPointCount: this.pointEntities.length })
-
         // 先添加落点标记（只有 point，无 label）
         const point = this.viewer.entities.add({
             id: "measure_point_entity_" + Date.now(),
@@ -115,22 +101,15 @@ export class AreaMeasure extends BaseMeasure {
             }
         })
         this.pointEntities.push(point)
-        MeasureLogger.info(TAG, `addPoint: 落点已添加，当前共 ${this.pointEntities.length} 个点`)
 
         const positions = this.getPositions()
         if (positions.length >= 3) {
             // 点数达到3个时，实时计算面积和周长
-            MeasureLogger.debug(TAG, 'addPoint: 点数 >= 3，异步计算面积和周长')
             void this.measureUtil.calculatePolygonAreaPerimeter(positions).then((result) => {
-                MeasureLogger.debug(TAG, 'addPoint: 面积/周长计算完成（异步回调）', {
-                    area: result.area.formatted,
-                    perimeter: result.perimeter.formatted
-                })
-
                 // 先清除旧标注
                 this.clearAreaLabel()
 
-                // 用 LabelCollection primitive 添加面积标注（图元系统，不触发 EntityCluster）
+                // 用 LabelCollection 添加面积标注
                 this.areaLabelObject = this.labelCollection.add({
                     position,
                     text: `面积: ${result.area.formatted}\n周长: ${result.perimeter.formatted}`,
@@ -140,23 +119,17 @@ export class AreaMeasure extends BaseMeasure {
                     outlineWidth: 2,
                     style: LabelStyle.FILL_AND_OUTLINE,
                     verticalOrigin: VerticalOrigin.BOTTOM,
-                    horizontalOrigin: 0, // HorizontalOrigin.LEFT
+                    horizontalOrigin: 0,
                     pixelOffset: new Cartesian2(20, -20),
                     heightReference: HeightReference.NONE,
                     disableDepthTestDistance: Number.POSITIVE_INFINITY,
                 })
-                MeasureLogger.info(TAG, 'addPoint: 面积标注已更新')
-            }).catch((err: unknown) => {
-                MeasureLogger.error(TAG, 'addPoint: 面积计算失败', { error: String(err) })
             })
         }
-        MeasureLogger.exit(TAG, 'addPoint')
     }
 
     finish(): void {
-        MeasureLogger.enter(TAG, 'finish')
         super.finish()
-        // 不清除面积标注，保留在地图上显示（与距离量测行为一致）
-        MeasureLogger.exit(TAG, 'finish')
+        // 不清除面积标注，保留在地图上显示
     }
 }
