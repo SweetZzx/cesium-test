@@ -41,10 +41,10 @@ import CesiumViewer from '@/Viewer/CesiumViewer'
 import { DistanceMeasure } from '@/system/Measure/DistanceMeasure'
 import { AreaMeasure } from '@/system/Measure/AreaMeasure'
 import type { BaseMeasure } from '@/system/Measure/BaseMeasure'
-import EventDispatcher from '@/system/EventDispatcher/EventDispatcher'
+import EventDispatcher, { sharedDispatcher } from '@/system/EventDispatcher/EventDispatcher'
 
 const viewer = CesiumViewer.viewer
-const dispatcher = new EventDispatcher()
+const dispatcher = sharedDispatcher
 
 const activeType = ref<'distance' | 'area' | ''>('')
 const measureInfo = ref('')

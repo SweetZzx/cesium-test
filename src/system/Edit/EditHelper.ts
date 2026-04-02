@@ -4,12 +4,16 @@ import {
     ConstantPositionProperty,
     PolygonHierarchy,
     PointGraphics,
+    Cartesian2,
 } from 'cesium';
+import { ElMessage } from 'element-plus';
 
 import { createAttackArrowPoints, createPincerAttackArrowPoints, createStraightArrowPoints, createStraightLineArrowPoints, createSwallowtailAttackArrowPoints } from '../Utils/SituationUtils/SituationUtil';
 import { GeometryType } from '../Draw/BaseDraw';
 import { circleRadiusCallback, CreateEllipse2Points, CreateEllipsePoints, CreateRectanglePoints, CreateSectorPoints } from '../Draw/Polygons/CreatePolygonPoints';
 import { throttle } from '../Utils/DebounceThrottle';
+import { getClosestLineAndIndex } from '../Utils/TurfUtil';
+import EventDispatcher from '../EventDispatcher/EventDispatcher';
 
 
 /** 控制点外观 */
@@ -31,7 +35,7 @@ interface DragContext {
 export class EditHelper {
     private viewer: Viewer;
     private handler: ScreenSpaceEventHandler;
-    // protected dispatcher: EventDispatcher;
+    private dispatcher?: EventDispatcher;
 
     /** 被编辑的原始 entity */
     private shapeEntity: Entity;
@@ -56,10 +60,11 @@ export class EditHelper {
     /* 保存原始材质 */
     private storedMat: any;
 
-    constructor(viewer: Viewer, entity: Entity, positions: Cartesian3[], geometryType: GeometryType, private onUpdate?: (p: Cartesian3[]) => void) {
+    constructor(viewer: Viewer, entity: Entity, positions: Cartesian3[], geometryType: GeometryType, private onUpdate?: (p: Cartesian3[]) => void, dispatcher?: EventDispatcher) {
         this.viewer = viewer;
         this.shapeEntity = entity;
         this.handler = new ScreenSpaceEventHandler(this.viewer.canvas)
+        this.dispatcher = dispatcher;
 
         this.positions = positions.map(p => p.clone());
         this.geometryType = geometryType;
@@ -100,6 +105,10 @@ export class EditHelper {
             ScreenSpaceEventType.MOUSE_MOVE
         );
         this.handler.setInputAction(() => this.onLeftUp(), ScreenSpaceEventType.LEFT_UP);
+        this.handler.setInputAction(
+            (e: any) => this.onRightClick(e),
+            ScreenSpaceEventType.RIGHT_CLICK
+        );
     }
 
     /** 节流后的鼠标移动处理 */
@@ -268,6 +277,104 @@ export class EditHelper {
                 break;
         }
 
+    }
+
+    /** 右键处理：派发事件给 Vue 组件弹框 */
+    private onRightClick(e: any) {
+        const mousePosition = e.position || e.endPosition;
+        const picked = this.viewer.scene.pick(mousePosition);
+
+        // 点到控制点 → 记录为可删除
+        if (defined(picked) && defined(picked.id) && this.ctrlPts.includes(picked.id)) {
+            const idx = (picked.id as any)._index;
+            this.dispatcher?.dispatchEvent('EDITRIGHTCLICK', {
+                type: 'delete',
+                pointIndex: idx,
+                mouseX: mousePosition.x,
+                mouseY: mousePosition.y,
+            });
+        } else {
+            // 否则派发插入事件
+            this.dispatcher?.dispatchEvent('EDITRIGHTCLICK', {
+                type: 'insert',
+                mousePosition,
+                mouseX: mousePosition.x,
+                mouseY: mousePosition.y,
+            });
+        }
+    }
+
+    /** 右键插入折点：仅线和多边形支持，供 Vue 组件调用 */
+    public onInsertHandler(mousePosition: Cartesian2) {
+        if (
+            this.geometryType !== GeometryType.COMMON_LINE &&
+            this.geometryType !== GeometryType.COMMON_POLYGON
+        ) {
+            return;
+        }
+
+        // 拾取地面点
+        const ray = this.viewer.camera.getPickRay(mousePosition);
+        const cart = this.viewer.scene.globe.pick(ray!, this.viewer.scene);
+        if (!cart) return;
+
+        // 找最近线段和垂足
+        const { nearestPoint, closestLineIndex } = getClosestLineAndIndex(this.positions, cart);
+        if (closestLineIndex < 0) return;
+
+        // 将垂足转为 Cartesian3
+        const nearestPointCartesian = Cartesian3.fromDegrees(
+            nearestPoint.geometry.coordinates[0],
+            nearestPoint.geometry.coordinates[1]
+        );
+
+        // 插入到 positions 和 ctrlPts 中
+        const insertIdx = closestLineIndex + 1;
+        this.positions.splice(insertIdx, 0, nearestPointCartesian);
+
+        const newCtrlPt = this.viewer.entities.add({
+            position: nearestPointCartesian,
+            point: POINT_OPTS
+        });
+        (newCtrlPt as any)._index = insertIdx;
+        this.ctrlPts.splice(insertIdx, 0, newCtrlPt);
+
+        // 更新后面所有控制点的索引
+        this.updateEntityIndex(insertIdx + 1);
+        this.updateShape();
+    }
+
+    /** 右键删除折点，供 Vue 组件调用 */
+    public onDeletePointHandler(pointIndex: number) {
+        if (
+            this.geometryType !== GeometryType.COMMON_LINE &&
+            this.geometryType !== GeometryType.COMMON_POLYGON
+        ) {
+            return;
+        }
+
+        // 多边形至少保留 3 个点
+        if (this.geometryType === GeometryType.COMMON_POLYGON && this.positions.length <= 3) {
+            ElMessage.error('多边形至少需要保留 3 个点');
+            return;
+        }
+
+        const idx = pointIndex;
+        // 从场景、positions、ctrlPts 中移除
+        this.viewer.entities.remove(this.ctrlPts[idx]);
+        this.positions.splice(idx, 1);
+        this.ctrlPts.splice(idx, 1);
+
+        // 更新后面控制点的索引
+        this.updateEntityIndex(idx);
+        this.updateShape();
+    }
+
+    /** 从指定索引开始重新编号所有控制点的 _index */
+    private updateEntityIndex(startIdx: number) {
+        for (let i = startIdx; i < this.ctrlPts.length; i++) {
+            (this.ctrlPts[i] as any)._index = i;
+        }
     }
 
     private getCentroid(): Cartesian3 {

@@ -19,6 +19,7 @@ declare module 'vue' {
     CommonDraw: typeof import('./components/Draw/CommonDraw.vue')['default']
     CustomDataLayers: typeof import('./components/LayerManager/CustomDataLayers.vue')['default']
     EarthDataLayers: typeof import('./components/LayerManager/EarthDataLayers.vue')['default']
+    EditContextMenu: typeof import('./components/Edit/EditContextMenu.vue')['default']
     ElButton: typeof import('element-plus/es')['ElButton']
     ElCheckbox: typeof import('element-plus/es')['ElCheckbox']
     ElInput: typeof import('element-plus/es')['ElInput']

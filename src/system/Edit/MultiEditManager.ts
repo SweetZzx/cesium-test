@@ -88,11 +88,16 @@ export class MultiEditManager {
     private startEdit(entity: Entity) {
         const positions: Cartesian3[] = (entity as any)._editPositions;
         const geometryType: GeometryType = (entity as any)._geometryType;
-        const helper = new EditHelper(this.viewer, entity, positions, geometryType, (newP) => {           
+        const helper = new EditHelper(this.viewer, entity, positions, geometryType, (newP) => {
             (entity as any)._editPositions = newP; // 其实引用没变，只是兜底
-        });
+        }, this.dispatcher);
         helper.start();
         this.activeEditor = { entity, helper };
+    }
+
+    /** 获取当前活跃的 EditHelper，供 Vue 组件调用折点操作 */
+    public getActiveHelper(): EditHelper | undefined {
+        return this.activeEditor?.helper;
     }
 
     /** 关闭当前编辑 */

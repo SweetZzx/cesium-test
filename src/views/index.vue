@@ -26,10 +26,12 @@
     <div class="mouse-status-info">
         <MouseStatusInfo></MouseStatusInfo>
     </div>
+    <EditContextMenu></EditContextMenu>
 </template>
 
 <script lang="ts" setup>
 import MenuTree from '@/components/Menu/MenuTree.vue';
+import EditContextMenu from '@/components/Edit/EditContextMenu.vue';
 import { MenuEnum } from '@/system/Common/enums';
 import menuComponentMap from '@/system/Config/MenuComponentMapConfig';
 import CesiumViewer from '@/Viewer/CesiumViewer';

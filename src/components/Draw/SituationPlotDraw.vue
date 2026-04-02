@@ -31,11 +31,11 @@ import PincerAttackArrow from '@/system/Draw/SituationDraw/PincerAttackArrow';
 import StraightArrow from '@/system/Draw/SituationDraw/StraightArrow';
 import StraightLineArrow from '@/system/Draw/SituationDraw/StraightLineArrow';
 import SwallowtailAttackArrow from '@/system/Draw/SituationDraw/SwallowtailAttackArrow';
-import EventDispatcher from '@/system/EventDispatcher/EventDispatcher';
+import EventDispatcher, { sharedDispatcher } from '@/system/EventDispatcher/EventDispatcher';
 import CesiumViewer from '@/Viewer/CesiumViewer';
 
 let viewer = CesiumViewer.viewer
-const dispatcher = new EventDispatcher();
+const dispatcher = sharedDispatcher;
 const drawInfo = ref('')
 // 监听绘制结果
 dispatcher.on('DRAWEND', (payload:any) => {

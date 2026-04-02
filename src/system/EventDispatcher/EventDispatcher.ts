@@ -18,6 +18,7 @@ export default class EventDispatcher {
             ['EDITEND',   new Set()],
             ['MOUSEMOVE',  new Set()],
             ['WHEEL',  new Set()],
+            ['EDITRIGHTCLICK', new Set()],
         ]);
     }
 
@@ -74,3 +75,6 @@ export default class EventDispatcher {
 
 
 }
+
+/** 全局共享的事件调度器单例 */
+export const sharedDispatcher = new EventDispatcher();

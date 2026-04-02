@@ -79,7 +79,7 @@ import CommonSector from '@/system/Draw/Polygons/CommonSector'
 import CommonBillboard from '@/system/Draw/Points/CommonBillboard'
 import CommonModel from '@/system/Draw/Points/CommonModel'
 import CommonWall from '@/system/Draw/Walls/CommonWall'
-import EventDispatcher from '@/system/EventDispatcher/EventDispatcher'
+import EventDispatcher, { sharedDispatcher } from '@/system/EventDispatcher/EventDispatcher'
 import CesiumViewer from '@/Viewer/CesiumViewer'
 import {
     EntityManager,
@@ -90,7 +90,7 @@ import { GeometryType, GeometryTypeLabel } from '@/system/Draw/GeometryType'
 const drawInfo = ref('')
 
 let viewer = CesiumViewer.viewer!
-const dispatcher = new EventDispatcher()
+const dispatcher = sharedDispatcher
 const entityManager = EntityManager.getInstance(viewer)
 
 // 监听绘制事件

@@ -27,4 +27,4 @@ export enum DrawState{
 }
 
 /**事件类型 */
-export type DrawEventType = 'DRAWSTART' | 'DRAWUPDATE' | 'DRAWEND' | 'EDITSTART'| 'EDITEND' | 'MOUSEMOVE' | 'WHEEL'
+export type DrawEventType = 'DRAWSTART' | 'DRAWUPDATE' | 'DRAWEND' | 'EDITSTART'| 'EDITEND' | 'MOUSEMOVE' | 'WHEEL' | 'EDITRIGHTCLICK'

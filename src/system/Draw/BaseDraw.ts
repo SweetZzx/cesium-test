@@ -18,6 +18,8 @@ export abstract class BaseDraw {
     private clickIndex = 0; /// 点击次数，用于生成控制点的id
 
     multiEditManager: MultiEditManager;
+    private keyDownHandler: ((e: KeyboardEvent) => void) | undefined;
+    private ctrlZHandler: ((e: KeyboardEvent) => void) | undefined;
 
     protected geometryType: GeometryType;
     protected minPointCount: number; // 最小点击次数
@@ -58,6 +60,7 @@ export abstract class BaseDraw {
         // 右键结束
         this.handler.setInputAction(() => this.finish(), ScreenSpaceEventType.RIGHT_CLICK);
 
+        this.bindCtrlZ();
         this.dispatcher.dispatchEvent('DRAWSTART', { type: this.constructor.name, text: "开始绘制" });
     }
 
@@ -137,6 +140,7 @@ export abstract class BaseDraw {
         this.handler.removeInputAction(ScreenSpaceEventType.LEFT_CLICK);
         this.handler.removeInputAction(ScreenSpaceEventType.MOUSE_MOVE);
         this.handler.removeInputAction(ScreenSpaceEventType.RIGHT_CLICK);
+        this.unbindCtrlZ();
 
         // 移除临时
         if (this.tempEntity) {
@@ -166,9 +170,37 @@ export abstract class BaseDraw {
 
     destroy() {
         this.finish();
+        this.unbindCtrlZ();
         this.pointEntities.forEach(p => this.viewer.entities.remove(p));
         this.pointEntities = [];
         this.handler.destroy();
+    }
+
+    /** 绑定 Ctrl+Z 撤销上一控制点 */
+    private bindCtrlZ() {
+        this.ctrlZHandler = (e: KeyboardEvent) => {
+            if (e.ctrlKey && e.key.toLowerCase() === 'z') {
+                if (this.pointEntities.length > 0) {
+                    const last = this.pointEntities.pop()!;
+                    this.viewer.entities.remove(last);
+                    this.clickIndex--;
+                    // 更新临时图形（如果已存在）
+                    if (this.tempCursor) {
+                        this.updateTempEntity(this.tempCursor);
+                    }
+                    const pos = this.getPositions();
+                    this.dispatcher.dispatchEvent('DRAWUPDATE', { type: this.constructor.name, points: pos });
+                }
+            }
+        };
+        window.addEventListener('keydown', this.ctrlZHandler);
+    }
+
+    private unbindCtrlZ() {
+        if (this.ctrlZHandler) {
+            window.removeEventListener('keydown', this.ctrlZHandler);
+            this.ctrlZHandler = undefined;
+        }
     }
     
     /** 子类可重写：返回当前已有点序列 */
