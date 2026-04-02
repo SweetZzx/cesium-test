@@ -9,6 +9,7 @@ import {
 import { createAttackArrowPoints, createPincerAttackArrowPoints, createStraightArrowPoints, createStraightLineArrowPoints, createSwallowtailAttackArrowPoints } from '../Utils/SituationUtils/SituationUtil';
 import { GeometryType } from '../Draw/BaseDraw';
 import { circleRadiusCallback, CreateEllipse2Points, CreateEllipsePoints, CreateRectanglePoints, CreateSectorPoints } from '../Draw/Polygons/CreatePolygonPoints';
+import { throttle } from '../Utils/DebounceThrottle';
 
 
 /** 控制点外观 */
@@ -65,7 +66,6 @@ export class EditHelper {
 
     }
 
-    /** 启动编辑 */
     start() {
         this.createControlPoints();
         this.bindEvents();
@@ -73,7 +73,6 @@ export class EditHelper {
         // this.dispatcher.dispatchEvent('EDITSTART', { type: wSADFthis.constructor.name, text: "开始编辑" })
     }
 
-    /** 销毁编辑 */
     destroy() {
         this.ctrlPts.forEach(p => this.viewer.entities.remove(p));
         this.ctrlPts = [];
@@ -81,9 +80,6 @@ export class EditHelper {
         if (this.highlight) this.viewer.entities.remove(this.highlight);
     }
 
-    /*-------------------- 私有方法 --------------------*/
-
-    /** 创建控制点 */
     private createControlPoints() {
 
 
@@ -97,15 +93,18 @@ export class EditHelper {
         });
     }
 
-    /** 事件绑定 */
     private bindEvents() {
         this.handler.setInputAction((e: any) => this.onLeftDown(e), ScreenSpaceEventType.LEFT_DOWN);
-        this.handler.setInputAction((e: any) => this.onMouseMove(e), ScreenSpaceEventType.MOUSE_MOVE);
+        this.handler.setInputAction(
+            (e: any) => this.throttledMouseMove(e),
+            ScreenSpaceEventType.MOUSE_MOVE
+        );
         this.handler.setInputAction(() => this.onLeftUp(), ScreenSpaceEventType.LEFT_UP);
-
     }
 
-    /** 左键按下：拾取 */
+    /** 节流后的鼠标移动处理 */
+    private throttledMouseMove = throttle((e: any) => this.onMouseMove(e), 16, { first: true, end: false });
+
     private onLeftDown(e: any) {
         const picked = this.viewer.scene.pick(e.position);
         if (!defined(picked)) return;
@@ -144,7 +143,6 @@ export class EditHelper {
         }
     }
 
-    /** 鼠标移动：高亮 + 拖拽 */
     private onMouseMove(e: any) {
         if (!this.drag) {
             // 高亮
@@ -181,7 +179,6 @@ export class EditHelper {
         }
     }
 
-    /** 左键抬起 */
     private onLeftUp() {
 
         if (!this.drag) return;
@@ -196,7 +193,6 @@ export class EditHelper {
         this.onUpdate?.(this.positions);
     }
 
-    /** 高亮控制点 */
     private setHighlight(ent: Entity) {
         this.storedMat = ent.point; // 备份原材质
         (ent as any).point = new PointGraphics({
@@ -215,7 +211,6 @@ export class EditHelper {
         this.highlight = undefined;
     }
 
-    /** 更新被编辑的图形 */
     private updateShape() {
         switch (this.geometryType) {
             case GeometryType.COMMON_POLYGON:
@@ -275,7 +270,6 @@ export class EditHelper {
 
     }
 
-    /** 简单形心 */
     private getCentroid(): Cartesian3 {
         const sum = this.positions.reduce(
             (acc, p) => Cartesian3.add(acc, p, acc),

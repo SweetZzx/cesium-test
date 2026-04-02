@@ -11,6 +11,7 @@ export class MultiEditManager {
     private viewer: Viewer;
     private handler: ScreenSpaceEventHandler;
     private activeEditor?: { entity: Entity; helper: EditHelper };
+    private keyDownHandler: ((e: KeyboardEvent) => void) | undefined;
 
     private static instance: MultiEditManager;
     private dispatcher: EventDispatcher;
@@ -24,15 +25,15 @@ export class MultiEditManager {
         this.bindKeyDelete();
         this.dispatcher = dispatcher;
     }
-    /** 绑定Delete键删除当前编辑entity */
     private bindKeyDelete() {
-        window.addEventListener('keydown', (e) => {
+        this.keyDownHandler = (e: KeyboardEvent) => {
             if (e.key === 'Delete' && this.activeEditor?.entity) {
-                this.viewer.entities.remove(this.activeEditor.entity);                
+                this.viewer.entities.remove(this.activeEditor.entity);
                 this.clear();
                 this.dispatcher.dispatchEvent('EDITEND',{text:""});
             }
-        });
+        };
+        window.addEventListener('keydown', this.keyDownHandler);
     }
 
     // 获取单例实例
@@ -51,19 +52,20 @@ export class MultiEditManager {
         (entity as any)._geometryType = geometryType;
     }
 
-    /** 销毁管理器 */
     destroy() {
         this.clear();
+        if (this.keyDownHandler) {
+            window.removeEventListener('keydown', this.keyDownHandler);
+            this.keyDownHandler = undefined;
+        }
         this.handler.destroy();
     }
 
 
-    /** 绑定单击 */
     private bindClick() {
         this.handler.setInputAction((e: any) => this.onClick(e), ScreenSpaceEventType.LEFT_CLICK);
     }
 
-    /** 单击逻辑 */
     private onClick(e: any) {
         const picked = this.viewer.scene.pick(e.position);
         if (defined(picked) && defined(picked.id) && (picked.id as any)._editPositions) {

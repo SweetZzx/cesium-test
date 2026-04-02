@@ -183,7 +183,6 @@ export default class LayerManager {
         this.layersIdMap.set(item.id, { ...item, handle })
     }
 
-    /**增加影像数据 */
     AddImageryLayer(provider: Cesium.ImageryProvider, show = true, alpha = 1, zIndex = 0) {
         let handle = this.viewer.imageryLayers.addImageryProvider(provider)
         handle.alpha = alpha
@@ -194,7 +193,6 @@ export default class LayerManager {
         return handle
     }
 
-    /**设置影像数据的叠加顺序 */
     SetImageryLayerIndex(layer: Cesium.ImageryLayer, targetIndex: number) {
         const imageryLayers = this.viewer.imageryLayers
         const curIndex = imageryLayers.indexOf(layer)

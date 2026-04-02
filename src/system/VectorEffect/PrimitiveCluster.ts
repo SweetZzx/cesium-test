@@ -61,7 +61,6 @@ export default class PrimitiveCluster {
     }
 
 
-    /** 添加单点 */
     AddPoint(p: ClusterPoint, width: number = this.option.pinSize, height: number = this.option.pinSize): void {
         this.billboardsCollectionCombine.add({
             id: p.id,
@@ -75,11 +74,9 @@ export default class PrimitiveCluster {
         })
     }
 
-    /** 批量添加 */
     AddPoints(list: ClusterPoint[]): void {
         list.forEach((p) => this.AddPoint(p))
     }
-    /** 清空 */
     Clear(): void {
         this.billboardsCollectionCombine.removeAll();
         this.viewer.scene.primitives.removeAll();

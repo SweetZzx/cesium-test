@@ -1,7 +1,7 @@
 import * as turf from '@turf/turf';
 import CoordinatesUtil from './CoordinatesUtil';
 import { Cartesian3 } from 'cesium';
-import { Feature, Polygon, GeoJsonProperties } from 'geojson';
+import type { Feature, Polygon, GeoJsonProperties } from 'geojson';
 
 
 export default class TurfUtil {

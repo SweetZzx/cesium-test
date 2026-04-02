@@ -22,7 +22,7 @@ export default defineConfig(({ mode }) => {
     server: {
       host: true,
       port: 8888,
-      open: true,
+      open: false,
       cors: true,
       proxy: {
         '/data': {

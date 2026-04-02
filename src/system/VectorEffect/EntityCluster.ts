@@ -67,7 +67,6 @@ export default class EntityCluster {
         return result.toDataURL();
     }
 
-    /** 添加单点 */
     AddPoint(p: ClusterPoint,width:number = this.option.pinSize,height:number = this.option.pinSize): void {
         this.dataSource.entities.add({
             id: p.id,
@@ -83,22 +82,18 @@ export default class EntityCluster {
         })
     }
 
-    /** 批量添加 */
     AddPoints(list: ClusterPoint[]): void {
         list.forEach((p) => this.AddPoint(p))
     }
 
-    /** 删除单点 */
     RemoveById(id: string): void {
         this.dataSource.entities.removeById(id)
     }
 
-    /** 清空 */
     Clear(): void {
         this.dataSource.entities.removeAll()
     }
 
-    /** 销毁 */
     Destroy(): void {
         this.viewer.dataSources.remove(this.dataSource)
     }

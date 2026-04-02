@@ -10,11 +10,8 @@ import {
     JulianDate
 } from 'cesium';
 import EventDispatcher from '../EventDispatcher/EventDispatcher';
+import { throttle } from '../Utils/DebounceThrottle';
 
-/**
- * 量算基类
- * 参照 BaseDraw 模式：pointEntities 管理坐标 + CallbackProperty 动态更新 + EventDispatcher 派发事件
- */
 export abstract class BaseMeasure {
     protected viewer: Viewer;
     protected dispatcher: EventDispatcher;
@@ -41,7 +38,6 @@ export abstract class BaseMeasure {
     /** 子类必须实现：生成跟随鼠标的临时图形（用 CallbackProperty） */
     protected abstract buildTempEntity(): Entity | undefined;
 
-    /** 开始量测 */
     start() {
         if (this.active || this.finished) return;
         this.active = true;
@@ -52,7 +48,7 @@ export abstract class BaseMeasure {
             ScreenSpaceEventType.LEFT_CLICK
         );
         this.handler.setInputAction(
-            (e: any) => this.onMouseMove(e),
+            (e: any) => this.throttledMouseMove(e),
             ScreenSpaceEventType.MOUSE_MOVE
         );
         this.handler.setInputAction(
@@ -84,6 +80,9 @@ export abstract class BaseMeasure {
             points: this.getPositions()
         });
     }
+
+    /** 节流后的鼠标移动处理 */
+    protected throttledMouseMove = throttle((e: any) => this.onMouseMove(e), 16, { first: true, end: false });
 
     protected onMouseMove(e: any) {
         const cartesian = this.safePick(e.position || e.endPosition);
@@ -118,7 +117,6 @@ export abstract class BaseMeasure {
         this.pointEntities.push(point);
     }
 
-    /** 结束量测 */
     finish() {
         if (!this.active) return;
         this.active = false;
@@ -160,7 +158,6 @@ export abstract class BaseMeasure {
         );
     }
 
-    /** 安全拾取贴地点 */
     private safePick(windowPos: Cartesian2): Cartesian3 | undefined {
         const ray = this.viewer.camera.getPickRay(windowPos);
         if (!ray) return undefined;
@@ -168,7 +165,6 @@ export abstract class BaseMeasure {
             ?? this.viewer.scene.globe.ellipsoid.scaleToGeodeticSurface(ray.origin);
     }
 
-    /** 清除所有实体 */
     clearEntities() {
         this.pointEntities.forEach(p => this.viewer.entities.remove(p));
         this.pointEntities = [];
@@ -178,7 +174,6 @@ export abstract class BaseMeasure {
         }
     }
 
-    /** 销毁 */
     destroy() {
         this.finish();
         this.clearEntities();

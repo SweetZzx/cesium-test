@@ -2,6 +2,7 @@ import * as Cesium from "cesium";
 import MouseStatusInViewer from "./MouseStatusInViewer";
 import { CESIUM_TOKEN } from "@/system/Config/SystemConfig";
 import MouseInfoPickerInViewer from "./MouseInfoPickerInViewer";
+import { throttle } from "@/system/Utils/DebounceThrottle";
 
 export default class CesiumViewer {
 
@@ -69,7 +70,7 @@ export default class CesiumViewer {
         // viewer.screenSpaceEventHandler.setInputAction(CesiumViewer.GetCameraHeight, Cesium.ScreenSpaceEventType.WHEEL)
 
         const picker = new MouseInfoPickerInViewer(viewer);
-        picker.onMouseMove((cartographic) => {
+        const throttledUpdate = throttle((cartographic: any) => {
             //鼠标位置
             MouseStatusInViewer.longtitude.value = Cesium.Math.toDegrees(cartographic?.longitude ?? 0)
             MouseStatusInViewer.latitude.value = Cesium.Math.toDegrees(cartographic?.latitude ?? 0)
@@ -80,10 +81,11 @@ export default class CesiumViewer {
             MouseStatusInViewer.pitch.value = Cesium.Math.toDegrees(viewer.camera.pitch ?? 0)
             MouseStatusInViewer.roll.value = Cesium.Math.toDegrees(viewer.camera.roll ?? 0)
 
-        });
+        }, 50, { first: true, end: false });
+        picker.onMouseMove(throttledUpdate);
         picker.onMouseWheel((h) => {
             MouseStatusInViewer.cameraHeight.value = h
-        })
+        });
 
         return viewer
     }

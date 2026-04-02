@@ -3,6 +3,7 @@ import EventDispatcher from '../EventDispatcher/EventDispatcher';
 import { MultiEditManager } from '../Edit/MultiEditManager';
 import { EntityManager } from './EntityManager';
 import { GeometryType } from './GeometryType';
+import { throttle } from '../Utils/DebounceThrottle';
 
 export { GeometryType } from './GeometryType';
 export abstract class BaseDraw {
@@ -42,7 +43,6 @@ export abstract class BaseDraw {
 
 
 
-    /** 开始绘制 */
     start() {
         if (this.active || this.finished) return;
         this.active = true;
@@ -51,7 +51,10 @@ export abstract class BaseDraw {
         // 左键落点
         this.handler.setInputAction((e: any) => this.onLeftClick(e), ScreenSpaceEventType.LEFT_CLICK);
         // 鼠标移动
-        this.handler.setInputAction((e: any) => this.onMouseMove(e), ScreenSpaceEventType.MOUSE_MOVE);
+        this.handler.setInputAction(
+            (e: any) => this.throttledMouseMove(e),
+            ScreenSpaceEventType.MOUSE_MOVE
+        );
         // 右键结束
         this.handler.setInputAction(() => this.finish(), ScreenSpaceEventType.RIGHT_CLICK);
 
@@ -77,6 +80,9 @@ export abstract class BaseDraw {
         this.addPoint(cartesian);
         this.dispatcher.dispatchEvent('DRAWUPDATE', { type: this.constructor.name, points: this.getPositions() });
     }
+
+    /** 节流后的鼠标移动处理 */
+    protected throttledMouseMove = throttle((e: any) => this.onMouseMove(e), 16, { first: true, end: false });
 
     protected onMouseMove(e: any) {
 
@@ -108,7 +114,6 @@ export abstract class BaseDraw {
         });
         this.pointEntities.push(point);
     }
-    /** 安全地拾取贴地点；失败返回 undefined */
     private safePick(windowPos: Cartesian2): Cartesian3 | undefined {
         const ray = this.viewer.camera.getPickRay(windowPos);
         if (!ray) return undefined;
@@ -125,7 +130,6 @@ export abstract class BaseDraw {
     // }
 
 
-    /** 结束绘制 */
     finish() {
         if (!this.active) return;
         this.active = false;
@@ -160,7 +164,6 @@ export abstract class BaseDraw {
         this.clickIndex = 0
     }
 
-    /** 清理 */
     destroy() {
         this.finish();
         this.pointEntities.forEach(p => this.viewer.entities.remove(p));
