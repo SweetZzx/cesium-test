@@ -36,29 +36,28 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onBeforeUnmount } from 'vue'
-import CesiumViewer from '@/Viewer/CesiumViewer'
+import { ref } from 'vue'
 import { DistanceMeasure } from '@/system/Measure/DistanceMeasure'
 import { AreaMeasure } from '@/system/Measure/AreaMeasure'
-import type { BaseMeasure } from '@/system/Measure/BaseMeasure'
-import EventDispatcher, { sharedDispatcher } from '@/system/EventDispatcher/EventDispatcher'
+import { useCesium } from '@/composables/core/useCesium'
+import { useDispatcherEvents } from '@/composables/core/useDispatcherEvents'
+import { useMeasureInstance } from '@/composables/measure/useMeasureInstance'
 
-const viewer = CesiumViewer.viewer
-const dispatcher = sharedDispatcher
+const { viewer, dispatcher } = useCesium()
+const { on: onEvent } = useDispatcherEvents(dispatcher)
+const { startMeasure, destroyCurrent } = useMeasureInstance(viewer, dispatcher)
 
 const activeType = ref<'distance' | 'area' | ''>('')
 const measureInfo = ref('')
 
-let currentMeasure: BaseMeasure | null = null
-
-// 监听事件，实时更新提示信息
-dispatcher.on('DRAWSTART', (payload: any) => {
+// 监听事件，实时更新提示信息（组件卸载时自动清理）
+onEvent('DRAWSTART', (payload: any) => {
     measureInfo.value = payload.text
 })
-dispatcher.on('MOUSEMOVE', (payload: any) => {
+onEvent('MOUSEMOVE', (payload: any) => {
     measureInfo.value = payload.text
 })
-dispatcher.on('DRAWEND', (payload: any) => {
+onEvent('DRAWEND', (payload: any) => {
     measureInfo.value = payload.text
     activeType.value = ''
 })
@@ -66,29 +65,20 @@ dispatcher.on('DRAWEND', (payload: any) => {
 const startDistanceMeasure = () => {
     activeType.value = 'distance'
     measureInfo.value = ''
-    currentMeasure = new DistanceMeasure(viewer!, dispatcher)
-    currentMeasure.start()
+    startMeasure(DistanceMeasure)
 }
 
 const startAreaMeasure = () => {
     activeType.value = 'area'
     measureInfo.value = ''
-    currentMeasure = new AreaMeasure(viewer!, dispatcher)
-    currentMeasure.start()
+    startMeasure(AreaMeasure)
 }
 
 const clearAll = () => {
-    if (currentMeasure) {
-        currentMeasure.destroy()
-        currentMeasure = null
-    }
+    destroyCurrent()
     activeType.value = ''
     measureInfo.value = ''
 }
-
-onBeforeUnmount(() => {
-    clearAll()
-})
 </script>
 
 <style lang="scss" scoped>

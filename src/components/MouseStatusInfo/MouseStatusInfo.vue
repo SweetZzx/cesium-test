@@ -1,21 +1,20 @@
 <template>
     <div class="status-info">
-        <span>经度: {{ MouseStatusInViewer.longtitude.value.toFixed(3) }}</span>
-        <span>纬度: {{ MouseStatusInViewer.latitude.value.toFixed(3) }}</span>
-        <span>高度: {{ MouseStatusInViewer.altitude.value.toFixed(2) }}米</span>
+        <span>经度: {{ longitude.toFixed(3) }}</span>
+        <span>纬度: {{ latitude.toFixed(3) }}</span>
+        <span>高度: {{ altitude.toFixed(2) }}米</span>
 
-        <span>偏航角: {{ MouseStatusInViewer.heading.value.toFixed(3) }}°</span>
-        <span>俯仰角: {{ MouseStatusInViewer.pitch.value.toFixed(3) }}°</span>
-        <span>横滚角: {{ MouseStatusInViewer.roll.value.toFixed(3) }}°</span>
+        <span>偏航角: {{ heading.toFixed(3) }}°</span>
+        <span>俯仰角: {{ pitch.toFixed(3) }}°</span>
+        <span>横滚角: {{ roll.toFixed(3) }}°</span>
 
-        <span>相机高度: {{ MouseStatusInViewer.cameraHeight.value.toFixed(2) }}米</span>
+        <span>相机高度: {{ cameraHeight.toFixed(2) }}米</span>
     </div>
 </template>
 <script setup lang="ts">
+import { useMouseStatus } from '@/composables/viewer/useMouseStatus'
 
-import MouseStatusInViewer from '@/Viewer/MouseStatusInViewer';
-
-
+const { longitude, latitude, altitude, heading, pitch, roll, cameraHeight } = useMouseStatus()
 </script>
 
 <style lang="scss" scoped>

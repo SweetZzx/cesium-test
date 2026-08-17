@@ -50,7 +50,15 @@ import {
   Collection,
   DataAnalysis,
   Coffee,
-  Odometer
+  Odometer,
+  Pouring,
+  Drizzling,
+  MostlyCloudy,
+  Sunny,
+  Moon,
+  Position,
+  Promotion,
+  Warning
 } from '@element-plus/icons-vue'
 import type { Component } from 'vue'
 
@@ -83,7 +91,15 @@ const iconMap: Record<string, Component> = {
   Collection,
   DataAnalysis,
   Coffee,
-  Odometer
+  Odometer,
+  Pouring,
+  Drizzling,
+  MostlyCloudy,
+  Sunny,
+  Moon,
+  Position,
+  Promotion,
+  Warning
 }
 
 // 响应式数据

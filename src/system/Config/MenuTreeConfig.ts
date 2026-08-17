@@ -68,6 +68,20 @@ const menuTreeData: IMenuTree[] = [
         //         componentCode: MenuEnum.PlaceNameSearch,
         //         children: []
         //     },
+            {
+                id: '3-3',
+                label: '迁徙图',
+                icon: 'Promotion',
+                componentCode: MenuEnum.MigrationLine,
+                children: []
+            },
+            {
+                id: '3-4',
+                label: '电子围栏',
+                icon: 'Warning',
+                componentCode: MenuEnum.ElectronicFence,
+                children: []
+            },
 
         ],
 
@@ -115,6 +129,55 @@ const menuTreeData: IMenuTree[] = [
             //     componentCode: MenuEnum.BackGroundControl,
             //     children: []
             // },
+            {
+                id: '5-3',
+                label: '云效果',
+                icon: 'Cloudy',
+                componentCode: MenuEnum.CloudControl,
+                children: []
+            },
+            {
+                id: '5-4',
+                label: '雨效果',
+                icon: 'Pouring',
+                componentCode: MenuEnum.RainControl,
+                children: []
+            },
+            {
+                id: '5-5',
+                label: '雪效果',
+                icon: 'Drizzling',
+                componentCode: MenuEnum.SnowControl,
+                children: []
+            },
+            {
+                id: '5-6',
+                label: '雾效果',
+                icon: 'MostlyCloudy',
+                componentCode: MenuEnum.FogControl,
+                children: []
+            },
+            {
+                id: '5-7',
+                label: '底图风格调整',
+                icon: 'Sunny',
+                componentCode: MenuEnum.ImageryStyleControl,
+                children: []
+            },
+            {
+                id: '5-8',
+                label: '积雪效果',
+                icon: 'Drizzling',
+                componentCode: MenuEnum.SnowMaskControl,
+                children: []
+            },
+            {
+                id: '5-9',
+                label: '高度雾效果',
+                icon: 'Moon',
+                componentCode: MenuEnum.HeightFogControl,
+                children: []
+            },
 
 
         ],
@@ -137,6 +200,13 @@ const menuTreeData: IMenuTree[] = [
                 label: '空间量算',
                 icon: 'Odometer',
                 componentCode: MenuEnum.MeasureTool,
+                children: []
+            },
+            {
+                id: '6-3',
+                label: '缓冲区分析',
+                icon: 'Position',
+                componentCode: MenuEnum.BufferAnalysis,
                 children: []
             },
         ],

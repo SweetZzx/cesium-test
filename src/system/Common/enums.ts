@@ -14,9 +14,19 @@ export enum MenuEnum{
 
     AtmosphereControl, //大气环境控制
     BackGroundControl, //全局背景控制
+    CloudControl, //云效果控制
+    RainControl, //雨效果控制
+    SnowControl, //雪效果控制
+    FogControl, //雾效果控制
+    ImageryStyleControl, //底图风格调整
+    SnowMaskControl, //积雪效果
+    HeightFogControl, //高度雾效果
 
     FloodAnalysis, //淹没分析
     MeasureTool, //空间量算
+    BufferAnalysis, //缓冲区分析
+    MigrationLine, //迁徙图
+    ElectronicFence, //电子围栏
 }
 
 //标绘状态

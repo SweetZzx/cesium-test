@@ -79,35 +79,37 @@ import CommonSector from '@/system/Draw/Polygons/CommonSector'
 import CommonBillboard from '@/system/Draw/Points/CommonBillboard'
 import CommonModel from '@/system/Draw/Points/CommonModel'
 import CommonWall from '@/system/Draw/Walls/CommonWall'
-import EventDispatcher, { sharedDispatcher } from '@/system/EventDispatcher/EventDispatcher'
-import CesiumViewer from '@/Viewer/CesiumViewer'
 import {
     EntityManager,
     IManagedEntity,
 } from '@/system/Draw/EntityManager'
 import { GeometryType, GeometryTypeLabel } from '@/system/Draw/GeometryType'
+import { useCesium } from '@/composables/core/useCesium'
+import { useDispatcherEvents } from '@/composables/core/useDispatcherEvents'
+import { useDrawInstance } from '@/composables/draw/useDrawInstance'
+
+const { viewer, dispatcher } = useCesium()
+const { on: onEvent } = useDispatcherEvents(dispatcher)
+const { startDraw } = useDrawInstance(viewer, dispatcher)
+const entityManager = EntityManager.getInstance(viewer)
 
 const drawInfo = ref('')
 
-let viewer = CesiumViewer.viewer!
-const dispatcher = sharedDispatcher
-const entityManager = EntityManager.getInstance(viewer)
-
-// 监听绘制事件
-dispatcher.on('DRAWEND', (payload: any) => {
+// 监听绘制事件（组件卸载时自动清理）
+onEvent('DRAWEND', (payload: any) => {
     drawInfo.value = payload.text
     refreshGroups()
 })
-dispatcher.on('DRAWSTART', (payload: any) => {
+onEvent('DRAWSTART', (payload: any) => {
     drawInfo.value = payload.text
 })
-dispatcher.on('MOUSEMOVE', (payload: any) => {
+onEvent('MOUSEMOVE', (payload: any) => {
     drawInfo.value = payload.text
 })
-dispatcher.on('EDITSTART', (payload: any) => {
+onEvent('EDITSTART', (payload: any) => {
     drawInfo.value = payload.text
 })
-dispatcher.on('EDITEND', () => {
+onEvent('EDITEND', () => {
     drawInfo.value = ''
     refreshGroups()
 })
@@ -150,36 +152,16 @@ function refreshGroups() {
 }
 
 // 绘制方法
-const DrawPointOnScene = () => {
-    new CommonPoint(viewer, dispatcher).start()
-}
-const DrawBillboardOnScene = () => {
-    new CommonBillboard(viewer, dispatcher).start()
-}
-const DrawModelOnScene = () => {
-    new CommonModel(viewer, dispatcher).start()
-}
-const DrawLineOnScene = () => {
-    new CommonLine(viewer, dispatcher).start()
-}
-const DrawPolygonOnScene = () => {
-    new CommonPolygon(viewer, dispatcher).start()
-}
-const DrawRectangleOnScene = () => {
-    new CommonRectangle(viewer, dispatcher).start()
-}
-const DrawSectorOnScene = () => {
-    new CommonSector(viewer, dispatcher).start()
-}
-const DrawCircleOnScene = () => {
-    new CommonCircle(viewer, dispatcher).start()
-}
-const DrawEllipseOnScene = () => {
-    new CommonEllipse(viewer, dispatcher).start()
-}
-const DrawWallOnScene = () => {
-    new CommonWall(viewer, dispatcher).start()
-}
+const DrawPointOnScene = () => startDraw(CommonPoint)
+const DrawBillboardOnScene = () => startDraw(CommonBillboard)
+const DrawModelOnScene = () => startDraw(CommonModel)
+const DrawLineOnScene = () => startDraw(CommonLine)
+const DrawPolygonOnScene = () => startDraw(CommonPolygon)
+const DrawRectangleOnScene = () => startDraw(CommonRectangle)
+const DrawSectorOnScene = () => startDraw(CommonSector)
+const DrawCircleOnScene = () => startDraw(CommonCircle)
+const DrawEllipseOnScene = () => startDraw(CommonEllipse)
+const DrawWallOnScene = () => startDraw(CommonWall)
 
 // 管理操作
 function toggleType(type: GeometryType, val: any) {

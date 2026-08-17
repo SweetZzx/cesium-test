@@ -73,7 +73,7 @@ export abstract class BaseDraw {
         if (pointEntitiesLength > 0 ) {
             let lastPointCartesian = this.pointEntities[pointEntitiesLength - 1].position?.getValue();
             if(!lastPointCartesian) return;
-            if(Cartesian3.distance(lastPointCartesian, cartesian) < 0.001) {              
+            if(Cartesian3.distance(lastPointCartesian, cartesian) < 0.001) {
                return
             }
         }
@@ -112,7 +112,7 @@ export abstract class BaseDraw {
                 pixelSize: 10,
                 color: Color.YELLOW,
                 heightReference: HeightReference.CLAMP_TO_GROUND,
-                disableDepthTestDistance: Number.POSITIVE_INFINITY  // 始终不被地形遮挡 
+                disableDepthTestDistance: Number.POSITIVE_INFINITY  // 始终不被地形遮挡
             }
         });
         this.pointEntities.push(point);
@@ -202,7 +202,7 @@ export abstract class BaseDraw {
             this.ctrlZHandler = undefined;
         }
     }
-    
+
     /** 子类可重写：返回当前已有点序列 */
     protected getPositions(): Cartesian3[] {
         return this.pointEntities.map(e => e.position!.getValue(JulianDate.now())!);

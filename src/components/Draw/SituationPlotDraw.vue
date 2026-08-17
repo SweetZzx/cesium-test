@@ -25,66 +25,47 @@
 </template>
 
 <script setup lang="ts">
-
 import AttackArrow from '@/system/Draw/SituationDraw/AttackArrow';
 import PincerAttackArrow from '@/system/Draw/SituationDraw/PincerAttackArrow';
 import StraightArrow from '@/system/Draw/SituationDraw/StraightArrow';
 import StraightLineArrow from '@/system/Draw/SituationDraw/StraightLineArrow';
 import SwallowtailAttackArrow from '@/system/Draw/SituationDraw/SwallowtailAttackArrow';
-import EventDispatcher, { sharedDispatcher } from '@/system/EventDispatcher/EventDispatcher';
-import CesiumViewer from '@/Viewer/CesiumViewer';
+import { useCesium } from '@/composables/core/useCesium'
+import { useDispatcherEvents } from '@/composables/core/useDispatcherEvents'
+import { useDrawInstance } from '@/composables/draw/useDrawInstance'
 
-let viewer = CesiumViewer.viewer
-const dispatcher = sharedDispatcher;
+const { viewer, dispatcher } = useCesium()
+const { on: onEvent } = useDispatcherEvents(dispatcher)
+const { startDraw } = useDrawInstance(viewer, dispatcher)
+
 const drawInfo = ref('')
-// 监听绘制结果
-dispatcher.on('DRAWEND', (payload:any) => {
-    drawInfo.value = payload.text;    
+
+// 监听绘制事件（组件卸载时自动清理）
+onEvent('DRAWEND', (payload: any) => {
+    drawInfo.value = payload.text;
 });
-dispatcher.on('DRAWSTART', (payload:any) => {
-    drawInfo.value = payload.text;    
+onEvent('DRAWSTART', (payload: any) => {
+    drawInfo.value = payload.text;
 });
-dispatcher.on('MOUSEMOVE', (payload:any) => {
-    drawInfo.value = payload.text;    
+onEvent('MOUSEMOVE', (payload: any) => {
+    drawInfo.value = payload.text;
 });
-dispatcher.on('EDITSTART', (payload:any) => {
-    drawInfo.value = payload.text;    
+onEvent('EDITSTART', (payload: any) => {
+    drawInfo.value = payload.text;
+});
+onEvent('EDITEND', (payload: any) => {
+    drawInfo.value = payload.text;
 });
 
-dispatcher.on('EDITEND', (payload:any) => {
-    drawInfo.value = payload.text;    
-});
-
-
-const DrawStraightArrowOnScene = () => {
-    const straightArrowTool = new StraightArrow(viewer!, dispatcher);
-    straightArrowTool.start();
-}
-
-const DrawStraightLineArrowOnScene = () => {
-    const lineArrowTool = new StraightLineArrow(viewer!, dispatcher);
-    lineArrowTool.start();
-}
-const DrawAttackArrowOnScene = () => {
-    const attackArrowTool = new AttackArrow(viewer!, dispatcher);
-    attackArrowTool.start();
-}
-const DrawSwallowtailAttackArrowOnScene = () => {
-    const swallowtailAttackArrowTool = new SwallowtailAttackArrow(viewer!, dispatcher);
-    swallowtailAttackArrowTool.start();
-}
-
-const DrawPincerAttackArrowOnScene = () => {
-    const pincerAttackArrowTool = new PincerAttackArrow(viewer!, dispatcher);
-    pincerAttackArrowTool.start();
-}
+const DrawStraightArrowOnScene = () => startDraw(StraightArrow)
+const DrawStraightLineArrowOnScene = () => startDraw(StraightLineArrow)
+const DrawAttackArrowOnScene = () => startDraw(AttackArrow)
+const DrawSwallowtailAttackArrowOnScene = () => startDraw(SwallowtailAttackArrow)
+const DrawPincerAttackArrowOnScene = () => startDraw(PincerAttackArrow)
 
 const ClearAllShapes = () => {
-    viewer!.entities.removeAll();
+    viewer.entities.removeAll();
 }
-
-
-
 </script>
 
 <style scoped lang="scss">
